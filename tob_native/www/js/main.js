@@ -118,7 +118,7 @@ BasicGame.Main.prototype = {
 			alphago.animations.add('think');
 			alphago.animations.play('think', 4, true);
 
-			game.time.events.loop(Phaser.Timer.SECOND * 1.5, me.appendMap, this);
+			game.time.events.loop(Phaser.Timer.SECOND * 0.7, me.appendMap, this);
 		}
 		else
 		{
@@ -205,7 +205,7 @@ BasicGame.Main.prototype = {
 	// for ai ma creatation
 	appendMap: function() {
 		//console.log(BasicGame.mapData);
-		var size = 10;
+		var size = 4;
 		var newMapPart = BasicGame.AI_createMap(size);
 		BasicGame.mapData = BasicGame.mapData.concat(newMapPart);
 	},

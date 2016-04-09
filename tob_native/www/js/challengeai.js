@@ -4,10 +4,8 @@ BasicGame.ChallengeAI.prototype = {
 
 	preload: function(){
 		BasicGame.AI_initMapCreator();
-		var size = 20;
 
 		BasicGame.storymode = false;
-		BasicGame.mapData = BasicGame.AI_createMap(size);
 	},
 
 	create: function(){
@@ -31,6 +29,11 @@ BasicGame.ChallengeAI.prototype = {
   		me.createInstructions();
 
   		me.createButtons();
+
+  		setTimeout(function(){
+  			var size = 30;
+			BasicGame.mapData = BasicGame.AI_createMap(size);
+		}, 100);
 
 		window.localStorage.mapName = "Challenge AI";
 		BasicGame.mapSpeed = {'value':1.2};
