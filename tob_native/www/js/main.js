@@ -193,7 +193,7 @@ BasicGame.Main.prototype = {
 		}
 
 		// bat check!! only if its not aimode - for now, aimode only do bat!----------------
-		if (!BasicGame.aimode && me.mode == me.BATMODE && this.game.time.totalElapsedSeconds() * 1000 > me.batTimeDue){
+		if (!BasicGame.aimode && me.mode == me.BATMODE && this.game.time.totalElapsedSeconds() * Phaser.Timer.SECOND > me.batTimeDue){
 			me.bloodCount = 0; // reset blood collection for bat transformation (e.g. when it come back from bat to vamp)
 			me.bloodFlash.alpha = 0;
 			me.runVampMode();
@@ -325,13 +325,13 @@ BasicGame.Main.prototype = {
 				if (me.mode == me.BATMODE){
 
 					// increase actual bat time due
-					me.batTimeDue += 1000;
+					me.batTimeDue += Phaser.Timer.SECOND;
 
 					// get new scale for x of blood bar
 					var newScale = me.loadingBar.scale.x + 0.25;
 
 					// get new time for decrease of blood bar
-					var newBatTimeDue = (me.batTimeDue - this.game.time.totalElapsedSeconds() * 1000);
+					var newBatTimeDue = (me.batTimeDue - this.game.time.totalElapsedSeconds() * Phaser.Timer.SECOND);
 
 					me.game.add.tween(me.loadingBar.scale).to({x: newScale}, 80).start();
 
@@ -798,7 +798,7 @@ blocks - generations
 			block.position.x += block.width * 0.5;
 			block.position.y += block.height * 0.5;
 
-			me.game.add.tween(block).to({angle: 360}, 1000, null, true, 0, 0, false).loop(true).start();
+			me.game.add.tween(block).to({angle: 360}, Phaser.Timer.SECOND, null, true, 0, 0, false).loop(true).start();
 
 	    	me.traps.add(block);
 	    }
@@ -810,7 +810,7 @@ blocks - generations
 			block.position.x += block.width * 0.5;
 			block.position.y += block.height * 0.5;
 
-			me.game.add.tween(block).to({angle: 360}, 1000, null, true, 0, 0, false).loop(true).start();
+			me.game.add.tween(block).to({angle: 360}, Phaser.Timer.SECOND, null, true, 0, 0, false).loop(true).start();
 
 			var goalPost = block.position.y + BasicGame.blockSize;
 			me.game.add.tween(block.position).to({y: goalPost}, 500, null, true, 0, 0, false).loop(true).start().yoyo(true);
@@ -979,9 +979,9 @@ Mode
 		me.defaultAngle = 25;
 		
 		if (!BasicGame.aimode){
-			me.batTimeDue = this.game.time.totalElapsedSeconds() * 1000 + 4000;
+			me.batTimeDue = this.game.time.totalElapsedSeconds() * Phaser.Timer.SECOND + Phaser.Timer.SECOND * 4;
 
-			me.game.add.tween(me.loadingBar.scale).to({x: 0.0}, 4000).start();
+			me.game.add.tween(me.loadingBar.scale).to({x: 0.0}, Phaser.Timer.SECOND * 3/* weird bug for timing. somehow it works with 3 not 4..! */).start();
 
 			me.game.add.tween(me.bloodFlash).to({alpha: 1.0}, 140).start();
 		}
@@ -1018,7 +1018,7 @@ BG
 		this.background_sky1 = this.game.add.sprite(0, 0, 'bg_sky');  
 		this.background_sky1.scale.setTo(scaleRatio, scaleRatio);
 
-		this.background_sky2 = this.game.add.sprite(bg_sky_img_cache.width * scaleRatio, 0, 'bg_sky');
+		this.background_sky2 = this.game.add.sprite(bg_sky_img_cache.width * scaleRatio - window.devicePixelRatio * 4, 0, 'bg_sky');
 		this.background_sky2.scale.setTo(scaleRatio, scaleRatio);
 
 		var bg_castle_img_cache = game.cache.getImage("bg_castle");
@@ -1035,7 +1035,7 @@ BG
 		this.background_castle1 = this.game.add.sprite(0, castle_height, 'bg_castle');  
 		this.background_castle1.scale.setTo(scaleRatio, scaleRatio);
 
-		this.background_castle2 = this.game.add.sprite(bg_castle_img_cache.width * scaleRatio, castle_height, 'bg_castle');
+		this.background_castle2 = this.game.add.sprite(bg_castle_img_cache.width * scaleRatio - window.devicePixelRatio * 2, castle_height, 'bg_castle');
 		this.background_castle2.scale.setTo(scaleRatio, scaleRatio);
 
 		var bg_cloud_img_cache = game.cache.getImage("bg_cloud");
@@ -1091,11 +1091,17 @@ BG
 
 	moveBackgroundCastle2 : function() {  
 		var bg_castle_img_cache = game.cache.getImage("bg_castle");
-		var scaleRatio = this.game.height / bg_castle_img_cache.height;
+		var scaleRatio;
+		if (window.devicePixelRatio < 2){
+			scaleRatio = 1;
+		}
+		else {
+			scaleRatio = (this.game.height - bg_castle_img_cache.height) / bg_castle_img_cache.height;
+		}
 
-		if (this.background_castle2.position.x < -(bg_castle_img_cache.width * scaleRatio)  )
+		if (this.background_castle2.position.x < -(bg_castle_img_cache.width * scaleRatio - window.devicePixelRatio * 2)  )
 		{        
-			this.background_castle2.position.x = bg_castle_img_cache.width * scaleRatio; 
+			this.background_castle2.position.x = bg_castle_img_cache.width * scaleRatio - window.devicePixelRatio * 2; 
 			this.background_castle2.position.x -= 0.5;  
 		}
 		else {
@@ -1105,11 +1111,17 @@ BG
 
 	moveBackgroundCastle1 : function() {  
 		var bg_castle_img_cache = game.cache.getImage("bg_castle");
-		var scaleRatio = this.game.height / bg_castle_img_cache.height;
+				var scaleRatio;
+		if (window.devicePixelRatio < 2){
+			scaleRatio = 1;
+		}
+		else {
+			scaleRatio = (this.game.height - bg_castle_img_cache.height) / bg_castle_img_cache.height;
+		}
 
-		if (this.background_castle1.position.x < -(bg_castle_img_cache.width * scaleRatio)  )
+		if (this.background_castle1.position.x < -(bg_castle_img_cache.width * scaleRatio - window.devicePixelRatio * 2)  )
 		{        
-			this.background_castle1.position.x = bg_castle_img_cache.width * scaleRatio; 
+			this.background_castle1.position.x = bg_castle_img_cache.width * scaleRatio - window.devicePixelRatio * 2; 
 			this.background_castle1.position.x -= 0.5;  
 		}
 		else {
@@ -1121,9 +1133,9 @@ BG
 		var bg_sky_img_cache = game.cache.getImage("bg_sky");
 		var scaleRatio = this.game.height / bg_sky_img_cache.height;
 
-		if (this.background_sky2.position.x < -(bg_sky_img_cache.width * scaleRatio)  )
+		if (this.background_sky2.position.x < -(bg_sky_img_cache.width * scaleRatio - window.devicePixelRatio * 4)  )
 		{        
-			this.background_sky2.position.x = bg_sky_img_cache.width * scaleRatio; 
+			this.background_sky2.position.x = bg_sky_img_cache.width * scaleRatio - window.devicePixelRatio * 4; 
 			this.background_sky2.position.x -= 0.3;  
 		}
 		else {
@@ -1135,15 +1147,16 @@ BG
 		var bg_sky_img_cache = game.cache.getImage("bg_sky");
 		var scaleRatio = this.game.height / bg_sky_img_cache.height;
 
-		if (this.background_sky1.position.x < -(bg_sky_img_cache.width * scaleRatio)  )
+		if (this.background_sky1.position.x < -(bg_sky_img_cache.width * scaleRatio - window.devicePixelRatio * 4)  )
 		{        
-			this.background_sky1.position.x = bg_sky_img_cache.width * scaleRatio;
+			this.background_sky1.position.x = bg_sky_img_cache.width * scaleRatio - window.devicePixelRatio * 4;
 			this.background_sky1.position.x -= 0.3;  
 		} 
 		else {
 			this.background_sky1.position.x -= 0.3;  
 		}        	  
 	},
+
 /*
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 Player
@@ -1316,7 +1329,7 @@ Player
 		// set the sprite's anchor to the center
 		me.cha.anchor.setTo(0.5, 0.5);
 
-		me.game.add.tween(me.cha.position).to({x: me.game.width + 70 * window.devicePixelRatio, y: me.game.height * 0.5 - 70 * window.devicePixelRatio}, 3000).start();
+		me.game.add.tween(me.cha.position).to({x: me.game.width + 70 * window.devicePixelRatio, y: me.game.height * 0.5 - 70 * window.devicePixelRatio}, Phaser.Timer.SECOND * 3).start();
 	},
 
 /*
