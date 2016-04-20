@@ -20,6 +20,26 @@ BasicGame.MainMenu.prototype = {
 		me.mainmenuSound.loopFull();
 
 		me.clickSound = me.game.add.audio('button');
+
+		me.createMedals();
+	},
+
+	createMedals: function() {
+		if (BasicGame.medals[0]){
+			this.medal_bronze = this.game.add.sprite(this.game.world.width * 0.445, this.game.world.height * 0.07, 'medal_bronze');  
+			this.medal_bronze.anchor.setTo(0.5, 0.0);
+		}
+
+		if (BasicGame.medals[1]){
+			this.medal_silver = this.game.add.sprite(this.game.world.width * 0.5, this.game.world.height * 0.07, 'medal_silver');  
+			this.medal_silver.anchor.setTo(0.5, 0.0);	
+		}
+		
+		if (BasicGame.medals[2]){
+			this.medal_gold = this.game.add.sprite(this.game.world.width * 0.555, this.game.world.height * 0.07, 'medal_gold');  
+			this.medal_gold.anchor.setTo(0.5, 0.0);	
+		}
+		
 	},
 
 	update: function() {
@@ -75,7 +95,7 @@ BasicGame.MainMenu.prototype = {
 	createButtons: function(){
 		var me = this;
 
-		this.btn_start = this.game.add.button(this.game.world.width * 0.3, this.game.world.height * 0.525, 'btn_story', this.startGame, this);
+		this.btn_start = this.game.add.button(this.game.world.width * 0.3, this.game.world.height * 0.545, 'btn_story', this.startGame, this);
 		this.btn_start.scale.setTo(1.2, 1.2);
 		this.btn_start.anchor.setTo(0.5, 0.5);
 		this.btn_start.onInputDown.add(me.onDown, this);
@@ -95,7 +115,7 @@ BasicGame.MainMenu.prototype = {
 		this.btn_mapeditor.onInputUp.add(me.onUp, this);
 		*/
 
-		this.btn_infinity = this.game.add.button(this.game.world.width * 0.7, this.game.world.height * 0.525, 'btn_infinity', this.gotoChallengeAI, this);
+		this.btn_infinity = this.game.add.button(this.game.world.width * 0.7, this.game.world.height * 0.545, 'btn_infinity', this.gotoChallengeAI, this);
 		this.btn_infinity.scale.setTo(1.2, 1.2);
 		this.btn_infinity.anchor.setTo(0.5, 0.5);
 		this.btn_infinity.onInputDown.add(me.onDown, this);

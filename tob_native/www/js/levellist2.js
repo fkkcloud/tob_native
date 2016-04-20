@@ -8,14 +8,17 @@ BasicGame.LevelList2.prototype = {
 		me.buttonSize = 0.9;
 		me.buttonDownSize = 1.0;
 
-		me.navButtonSize = 0.9;
-		me.navButtonDownSize = 1.0;
+		me.navMenuButtonSize = 0.9;
+		me.navMenuButtonDownSize = 1.0;
 
-		me.navButtonReverseSize = -0.9;
-		me.navButtonReverseDownSize = -1.0;
+		me.navButtonSize = 1.45;
+		me.navButtonDownSize = 1.5;
+
+		me.navButtonReverseSize = -1.45;
+		me.navButtonReverseDownSize = -1.5;
 
 		me.buttonXPositions = [0.2, 0.4, 0.6, 0.8, 0.2, 0.4, 0.6, 0.8, 0.2, 0.4, 0.6, 0.8, 0.2, 0.4, 0.6, 0.8, 0.2, 0.4, 0.6, 0.8, 0.2, 0.4, 0.6, 0.8, 0.2, 0.4, 0.6, 0.8, 0.2, 0.4, 0.6, 0.8];
-		me.buttonYPositions = [0.33, 0.33, 0.33, 0.33, 0.66, 0.66, 0.66, 0.66, 0.33, 0.33, 0.33, 0.33, 0.66, 0.66, 0.66, 0.66, 0.33, 0.33, 0.33, 0.33, 0.66, 0.66, 0.66, 0.66, 0.33, 0.33, 0.33, 0.33, 0.66, 0.66, 0.66, 0.66];
+		me.buttonYPositions = [0.36, 0.36, 0.36, 0.36, 0.66, 0.66, 0.66, 0.66, 0.36, 0.36, 0.36, 0.36, 0.66, 0.66, 0.66, 0.66, 0.36, 0.36, 0.36, 0.36, 0.66, 0.66, 0.66, 0.66, 0.36, 0.36, 0.36, 0.36, 0.66, 0.66, 0.66, 0.66];
 		me.stageList = {start:8, end:15};
 
 		me.createBG();
@@ -25,6 +28,26 @@ BasicGame.LevelList2.prototype = {
 		me.createBanner();
 
 		me.clickSound = me.game.add.audio('button');
+
+		me.createMedals();
+	},
+
+	createMedals: function() {
+		if (BasicGame.medals[0]){
+			this.medal_bronze = this.game.add.sprite(this.game.world.width * 0.445, this.game.world.height * 0.07, 'medal_bronze');  
+			this.medal_bronze.anchor.setTo(0.5, 0.0);
+		}
+
+		if (BasicGame.medals[1]){
+			this.medal_silver = this.game.add.sprite(this.game.world.width * 0.5, this.game.world.height * 0.07, 'medal_silver');  
+			this.medal_silver.anchor.setTo(0.5, 0.0);	
+		}
+		
+		if (BasicGame.medals[2]){
+			this.medal_gold = this.game.add.sprite(this.game.world.width * 0.555, this.game.world.height * 0.07, 'medal_gold');  
+			this.medal_gold.anchor.setTo(0.5, 0.0);	
+		}
+		
 	},
 
 	update: function() {
@@ -49,6 +72,16 @@ BasicGame.LevelList2.prototype = {
 
 	onNavUp: function(but){
 		but.scale.setTo(this.buttonSize, this.buttonSize);
+	},
+
+	onMenuNavDown: function(but){
+		var me = this;
+		this.clickSound.play();
+		but.scale.setTo(me.navMenuButtonDownSize, me.navMenuButtonDownSize);
+	},
+
+	onMenuNavUp: function(but){
+		but.scale.setTo(this.navMenuButtonSize, this.navMenuButtonSize);
 	},
 
 	onBtnLevelDown: function(but){
@@ -139,9 +172,9 @@ BasicGame.LevelList2.prototype = {
 		// menu
 		this.btn_menu = this.game.add.button(this.game.world.width * 0.92, this.game.world.height * 0.9, 'btn_levelmenu', this.goToMainMenu, this);
 		this.btn_menu.anchor.setTo(0.5, 0.5);
-		this.btn_menu.scale.setTo(me.navButtonSize, me.navButtonSize);
-		this.btn_menu.onInputDown.add(me.onNavBtnDown, this);
-		this.btn_menu.onInputUp.add(me.onNavBtnUp, this);
+		this.btn_menu.scale.setTo(me.navMenuButtonSize, me.navMenuButtonSize);
+		this.btn_menu.onInputDown.add(me.onMenuNavDown, this);
+		this.btn_menu.onInputUp.add(me.onMenuNavUp, this);
 		
 		// next
 		this.btn_next = this.game.add.button(this.game.world.width * 0.6666, this.game.world.height * 0.9, 'nav_arrow', this.goToNextLevel, this);
@@ -157,17 +190,14 @@ BasicGame.LevelList2.prototype = {
 		this.btn_next.onInputDown.add(me.onNavBtnDown, this);
 		this.btn_next.onInputUp.add(me.onNavBtnUp, this);
 
-		this.banner = this.game.add.sprite(this.game.world.width * (0.3333 + 0.3333 / 5), this.game.world.height * 0.9, 'nav_on');  
+		this.banner = this.game.add.sprite(this.game.world.width * (0.3333 + 0.3333 / 4), this.game.world.height * 0.9, 'nav_on');  
 		this.banner.anchor.setTo(0.5, 0.5);
 
-		this.banner = this.game.add.sprite(this.game.world.width * (0.3333 + 0.3333 * 2 / 5), this.game.world.height * 0.9, 'nav_off');  
+		this.banner = this.game.add.sprite(this.game.world.width * (0.3333 + 0.3333 * 2 / 4), this.game.world.height * 0.9, 'nav_off');  
 		this.banner.anchor.setTo(0.5, 0.5);
 
-		this.banner = this.game.add.sprite(this.game.world.width * (0.3333 + 0.3333 * 3 / 5), this.game.world.height * 0.9, 'nav_on');  
+		this.banner = this.game.add.sprite(this.game.world.width * (0.3333 + 0.3333 * 3 / 4), this.game.world.height * 0.9, 'nav_on');  
 		this.banner.anchor.setTo(0.5, 0.5);
-
-		this.banner = this.game.add.sprite(this.game.world.width * (0.3333 + 0.3333 * 4 / 5), this.game.world.height * 0.9, 'nav_on');  
-		this.banner.anchor.setTo(0.5, 0.5);	
 	},
 
 	createBanner: function(){

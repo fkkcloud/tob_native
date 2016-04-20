@@ -5,14 +5,39 @@ BasicGame.Main = function(game){
 BasicGame.Main.prototype = {
 
 	render: function() {
+		
+		//debug
 		return;
 
-		//debug
 		var me = this;
 		for (var i = 0; i < me.traps.children.length; i++){
 			
 			var trap = me.traps.children[i];
 			game.debug.body(trap);
+		}
+
+		for (var i = 0; i < me.movingTraps.children.length; i++){
+			
+			var trap = me.movingTraps.children[i];
+			game.debug.body(trap);
+		}
+
+		for (var i = 0; i < me.movingTraps2.children.length; i++){
+			
+			var trap = me.movingTraps2.children[i];
+			game.debug.body(trap);
+		}
+
+		for (var i = 0; i < me.bloods.children.length; i++){
+			
+			var blood = me.bloods.children[i];
+			game.debug.body(blood);
+		}
+
+		for (var i = 0; i < me.endPoints.children.length; i++){
+			
+			var ed = me.endPoints.children[i];
+			game.debug.body(ed);
 		}
 
 		if (me.cha)
@@ -258,7 +283,7 @@ BasicGame.Main.prototype = {
 		}
 		else {
 			// activate run FX
-			if (!me.groundFX){
+			if (!me.groundFX && !me.chaDead){
 				me.playFXPlayerRun();
 				me.groundFX = me.game.time.events.loop(Phaser.Timer.SECOND * 0.4, me.playFXPlayerRun, me);
 			}
@@ -270,6 +295,8 @@ BasicGame.Main.prototype = {
 		for (var i = 0; i < me.traps.children.length; i++){
 			
 			var trap = me.traps.children[i];
+			trap.body.width = trap.width * 0.85;
+			trap.body.height = trap.height * 0.85;
 			me.game.physics.arcade.collide(me.cha, trap, function(){
 				if (!me.chaDead)
 					me.deathHandler();
@@ -279,6 +306,19 @@ BasicGame.Main.prototype = {
 		for (var i = 0; i < me.movingTraps.children.length; i++){
 			
 			var trap = me.movingTraps.children[i];
+			trap.body.width = trap.width * 0.85;
+			trap.body.height = trap.height * 0.85;
+			me.game.physics.arcade.collide(me.cha, trap, function(){
+				if (!me.chaDead)
+					me.deathHandler();
+			}, null, me);
+		}
+
+		for (var i = 0; i < me.movingTraps2.children.length; i++){
+			
+			var trap = me.movingTraps2.children[i];
+			trap.body.width = trap.width * 0.85;
+			trap.body.height = trap.height * 0.85;
 			me.game.physics.arcade.collide(me.cha, trap, function(){
 				if (!me.chaDead)
 					me.deathHandler();
@@ -378,7 +418,7 @@ BasicGame.Main.prototype = {
 		var fontSize = 32 * window.devicePixelRatio;
 
 		var headingFont = fontSize + "px Impact";
-		var subHeadingFont = 18 * window.devicePixelRatio + "px Impact";
+		var subHeadingFont = 22 * window.devicePixelRatio + "px Impact";
 		
 		me.mapTitle = me.game.add.text(me.game.world.centerX,
 			me.game.world.height * 0.3, 
@@ -425,6 +465,7 @@ blocks - memory
 		this.traps = game.add.group();
 		this.endPoints = game.add.group();
 		this.movingTraps = game.add.group();
+		this.movingTraps2 = game.add.group();
 	},
 
 	destroyBlocks: function(){
@@ -438,6 +479,8 @@ blocks - memory
 			this.endPoints.destroy();
 		if (this.movingTraps && this.movingTraps.length > 0)
 			this.movingTraps.destroy();
+		if (this.movingTraps2 && this.movingTraps2.length > 0)
+			this.movingTraps2.destroy();
 	},
 
 /*
@@ -450,8 +493,6 @@ blocks - event handlers
 		var me = this;
 
 		me.chaDead = true;
-
-		me.game.time.events.remove(me.groundFX);
 
 		if (BasicGame.storymode == false)
    	 		me.game.time.events.remove(me.scoreCounter);
@@ -472,6 +513,8 @@ blocks - event handlers
 		//me.cha.body.velocity.y = -200 * window.devicePixelRatio;
 		me.game.add.tween(me.cha).to({angle: -10}, 40).start();
 
+		me.game.time.events.remove(me.groundFX);
+		
 		me.game.time.events.add(100, function(){ 
 			me.cha.destroy();
 		}, me);
@@ -490,6 +533,9 @@ blocks - event handlers
 			me.endPoints.children[i].body.velocity.x = 0;
 		for (var i = 0; i < me.movingTraps.children.length; i++){
 			me.movingTraps.children[i].body.velocity.x = 0;
+		}
+		for (var i = 0; i < me.movingTraps2.children.length; i++){
+			me.movingTraps2.children[i].body.velocity.x = 0;
 		}
 
 		//Wait a couple of seconds and then trigger the game over screen
@@ -533,9 +579,33 @@ blocks - event handlers
 		menuButton.onInputUp.add(me.onUp, this);
 
 		if (BasicGame.storymode == false) {
-			var scoreText = me.game.add.bitmapText(me.game.width * 0.5, me.game.height * 0.5, 'flappyfont', me.score.toString() + 'm', 32 * window.devicePixelRatio);
+			//score
+			var scoreText = me.game.add.bitmapText(me.game.width * 0.5, me.game.height * 0.56, 'flappyfont', me.score.toString() + 'm', 24 * window.devicePixelRatio);
 	    	scoreText.anchor.setTo(0.5, 0.5);
 	    	scoreText.visible = true;
+
+	    	// show highest score
+	    	var highestAIScore;
+    		if (!window.localStorage.highestAIScore || window.localStorage.highestAIScore == undefined ||
+				window.localStorage.highestAIScore == "undefined" || window.localStorage.highestAIScore == null) 
+			{
+				window.localStorage.highestAIScore = me.score;
+				highestAIScore = me.score;
+			}
+			else
+			{
+				if (me.score > window.localStorage.highestAIScore){
+					highestAIScore = me.score;
+					window.localStorage.highestAIScore = me.score;
+				}
+				else {
+					highestAIScore = window.localStorage.highestAIScore;
+				}
+			}
+    		
+    		var highScoreText = me.game.add.bitmapText(me.game.width * 0.5, me.game.height * 0.5, 'flappyfont', 'Highest Score:' + highestAIScore.toString() + 'm', 24 * window.devicePixelRatio);
+	    	highScoreText.anchor.setTo(0.5, 0.5);
+	    	highScoreText.visible = true;
 	    }
 
 	    if (BasicGame.trialCount % 4 == 0) 
@@ -577,17 +647,12 @@ blocks - event handlers
 			me.endPoints.children[i].body.velocity.x = 0;
 		for (var i = 0; i < me.movingTraps.children.length; i++)
 			me.movingTraps.children[i].body.velocity.x = 0;
+		for (var i = 0; i < me.movingTraps2.children.length; i++)
+			me.movingTraps2.children[i].body.velocity.x = 0;
 
 		if (me.mode == me.VAMPMODE)
 			me.playFXTransform();
 		me.playPlayerStageEnd();
-
-		// if there is next stage - go!
-		if (BasicGame.stageData.length - 1 > BasicGame.currentStage){
-			BasicGame.currentStage += 1;
-			BasicGame.stageProgress[BasicGame.currentStage] = 1; // progress alarm
-			window.localStorage.stageProgress = JSON.stringify(BasicGame.stageProgress); //  save to localStorage
-		}
 
 		// create a new bitmap data object
 	    var bmd = game.add.bitmapData(me.game.width, me.game.height);
@@ -602,36 +667,7 @@ blocks - event handlers
 	    var sprite = game.add.sprite(0, 0, bmd);
 	    sprite.alpha = 0.5;
 
-	    var gameoverTitle = me.game.add.sprite(me.game.world.width * 0.5, me.game.height * 0.36, "title_stageClear");
-  		gameoverTitle.anchor.setTo(0.5, 0.5);
-
-  		var restartBtnWidthRatio = 0.4; 
-  		var menuBtnWidthRatio = 0.6; 
-
-  		if (BasicGame.storymode){
-  			var nextStageButton = me.game.add.button(me.game.world.width * 0.5,
-  			me.game.world.height * 0.68, "btn_next", me.gotoNextStage, me);
-	  		nextStageButton.anchor.setTo(0.5, 0.5);
-			nextStageButton.scale.x *= -1; // flip horizontally
-	  		nextStageButton.onInputDown.add(me.onDownNeg, this);
-			nextStageButton.onInputUp.add(me.onUpNeg, this);
-
-			restartBtnWidthRatio = 0.25;
-			menuBtnWidthRatio = 0.75;
-  		}
-
-  		var restartButton = me.game.add.button(me.game.world.width * restartBtnWidthRatio,
-  			me.game.world.height * 0.68, "btn_replay", me.restartGame, me);
-  		restartButton.anchor.setTo(0.5, 0.5);
-  		restartButton.onInputDown.add(me.onDown, this);
-		restartButton.onInputUp.add(me.onUp, this);
-
-  		var menuButton = me.game.add.button(me.game.world.width * menuBtnWidthRatio,
-  			me.game.world.height * 0.68, "btn_menu", me.gotoMenu, me);
-  		menuButton.anchor.setTo(0.5, 0.5);
-  		menuButton.onInputDown.add(me.onDown, this);
-		menuButton.onInputUp.add(me.onUp, this);
-
+	    		// player stat
 		if (BasicGame.storymode == false) {
 			var scoreText = me.game.add.bitmapText(me.game.width * 0.5, me.game.height * 0.5, 'flappyfont', me.score.toString() + 'm', 32 * window.devicePixelRatio);
 	    	scoreText.anchor.setTo(0.5, 0.5);
@@ -647,6 +683,80 @@ blocks - event handlers
 	    }
     	BasicGame.trialCount = 1;
 
+		// medal managements
+		var medalEarned = false;
+    	if (BasicGame.storymode && BasicGame.currentStage == 7 && BasicGame.medals[0] == 0){
+    		// get bronze medal
+    		BasicGame.medals[0] = 1;
+    		window.localStorage.medals = JSON.stringify(BasicGame.medals);
+    		medalEarned = true;
+
+    		var earnedMedal = me.game.add.sprite(me.game.world.width * 0.5, me.game.height * 0.5, "medal_bronze_earned");
+  			earnedMedal.anchor.setTo(0.5, 0.5);
+    	}
+    	else if (BasicGame.storymode && BasicGame.currentStage == 15 && BasicGame.medals[1] == 0){
+    		// get silver medal
+    		BasicGame.medals[1] = 1;
+    		window.localStorage.medals = JSON.stringify(BasicGame.medals);
+    		medalEarned = true;
+
+    		var earnedMedal = me.game.add.sprite(me.game.world.width * 0.5, me.game.height * 0.5, "medal_silver_earned");
+  			earnedMedal.anchor.setTo(0.5, 0.5);
+    	}
+    	else if (BasicGame.storymode && BasicGame.currentStage == 23 && BasicGame.medals[2] == 0){
+    		// get gold medal
+    		BasicGame.medals[2] = 1;
+    		window.localStorage.medals = JSON.stringify(BasicGame.medals);
+    		medalEarned = true;
+
+    		var earnedMedal = me.game.add.sprite(me.game.world.width * 0.5, me.game.height * 0.5, "medal_gold_earned");
+  			earnedMedal.anchor.setTo(0.5, 0.5);
+    	}
+
+		// if there is next stage - go!
+		if (BasicGame.stageData.length - 1 > BasicGame.currentStage){
+			BasicGame.currentStage += 1;
+			BasicGame.stageProgress[BasicGame.currentStage] = 1; // progress alarm
+			window.localStorage.stageProgress = JSON.stringify(BasicGame.stageProgress); // save to localStorage
+		}
+
+	    var clearTitleImgId;
+	    if (medalEarned)
+	    	clearTitleImgId = "title_medalEarned";
+	    else
+	    	clearTitleImgId = "title_stageClear";
+
+	    var gameoverTitle = me.game.add.sprite(me.game.world.width * 0.5, me.game.height * 0.3, clearTitleImgId);
+  		gameoverTitle.anchor.setTo(0.5, 0.5);
+
+  		var restartBtnWidthRatio = 0.4; 
+  		var menuBtnWidthRatio = 0.6; 
+
+  		if (BasicGame.storymode){
+  			var nextStageButton = me.game.add.button(me.game.world.width * 0.5,
+  			me.game.world.height * 0.74, "btn_next", me.gotoNextStage, me);
+	  		nextStageButton.anchor.setTo(0.5, 0.5);
+			nextStageButton.scale.x *= -1; // flip horizontally
+	  		nextStageButton.onInputDown.add(me.onDownNeg, this);
+			nextStageButton.onInputUp.add(me.onUpNeg, this);
+
+			restartBtnWidthRatio = 0.25;
+			menuBtnWidthRatio = 0.75;
+  		}
+
+  		var restartButton = me.game.add.button(me.game.world.width * restartBtnWidthRatio,
+  			me.game.world.height * 0.74, "btn_replay", me.restartGame, me);
+  		restartButton.anchor.setTo(0.5, 0.5);
+  		restartButton.onInputDown.add(me.onDown, this);
+		restartButton.onInputUp.add(me.onUp, this);
+
+  		var menuButton = me.game.add.button(me.game.world.width * menuBtnWidthRatio,
+  			me.game.world.height * 0.74, "btn_menu", me.gotoMenu, me);
+  		menuButton.anchor.setTo(0.5, 0.5);
+  		menuButton.onInputDown.add(me.onDown, this);
+		menuButton.onInputUp.add(me.onUp, this);
+
+		// advertisement!! I REALLY JUST WANT TO ENJOY MY LIFE HELP ME!
     	if (BasicGame.trialCount % 4 == 0) 
     		BasicGame.ad_int.show();
     	BasicGame.ad_banner.show();
@@ -747,18 +857,11 @@ blocks - generations
 	    	block = me.endPoints.getFirstDead();
 	    else if (imgId === 5)
 	    	block = me.movingTraps.getFirstDead();
+	    else if (imgId === 6)
+	    	block = me.movingTraps2.getFirstDead();
 	    
 
 	    if (!block){
-	    	//console.log('allocating new block, total allocated:', me.blocks.length); // debug memory
-
-	    	/*
-	    	var blockKey;
-	    	if (me.mode === 0)
-	    		blockKey = 'pipe';
-	    	else
-	    		blockKey = 'crate';
-	    	*/
 
 	    	block = me.game.add.sprite(x, y, imgStr);
 	    }
@@ -768,19 +871,17 @@ blocks - generations
 	    	block.reset(x, y);	
 	    }
 
-	    me.game.physics.arcade.enable(block);
+    	// setting block specifications
+    	me.game.physics.arcade.enable(block);
 
-	    // Add velocity to the pipe to make it move left
-	    block.body.velocity.x = me.mapVelX;
-
+    	 // Add velocity to the pipe to make it move left
+		block.body.velocity.x = me.mapVelX;
 	    block.body.friction.x = 0;
-
 
 	    // Kill the pipe when it's no longer visible 
 	    block.checkWorldBounds = true;
 	    block.outOfBoundsKill = true;
 	    
-
 	    block.body.immovable = true;
 
 	    block.scale.setTo(BasicGame.blockSpriteScale, BasicGame.blockSpriteScale);
@@ -791,42 +892,53 @@ blocks - generations
 	    	me.blocks.add(block);
 	    }
 	    else if (imgId === 2){ // trap
-	    	block.body.width = block.width * 0.65;
-			block.body.height = block.height * 0.65;
+	    	//block.body.width = block.width * 0.65;
+			//block.body.height = block.height * 0.65;
 			
 			block.anchor.setTo(0.5, 0.5);
 			block.position.x += block.width * 0.5;
 			block.position.y += block.height * 0.5;
 
-			me.game.add.tween(block).to({angle: 360}, Phaser.Timer.SECOND, null, true, 0, 0, false).loop(true).start();
+			me.game.add.tween(block).to({angle: 360}, 1000, null, true, 0, 0, false).loop(true).start();
 
 	    	me.traps.add(block);
 	    }
 	    else if (imgId === 5){ // moving trap
-	    	block.body.width = block.width * 0.65;
-			block.body.height = block.height * 0.65;
+	    	//block.body.width = block.width * 0.65;
+			//block.body.height = block.height * 0.65;
 			
 			block.anchor.setTo(0.5, 0.5);
 			block.position.x += block.width * 0.5;
 			block.position.y += block.height * 0.5;
 
-			me.game.add.tween(block).to({angle: 360}, Phaser.Timer.SECOND, null, true, 0, 0, false).loop(true).start();
+			me.game.add.tween(block).to({angle: 360}, 1000, null, true, 0, 0, false).loop(true).start();
 
 			var goalPost = block.position.y + BasicGame.blockSize;
 			me.game.add.tween(block.position).to({y: goalPost}, 500, null, true, 0, 0, false).loop(true).start().yoyo(true);
 
 	    	me.movingTraps.add(block);
 	    }
+	    else if (imgId === 6){ // moving trap
+	    	//block.body.width = block.width * 0.65;
+			//block.body.height = block.height * 0.65;
+			
+			block.anchor.setTo(0.5, 0.5);
+			block.position.x += block.width * 0.5;
+			block.position.y += block.height * 0.5;
+
+			me.game.add.tween(block).to({angle: 360}, 1000, null, true, 0, 0, false).loop(true).start();
+
+			var goalPost = block.position.y + BasicGame.blockSize * 2;
+			me.game.add.tween(block.position).to({y: goalPost}, 500, null, true, 0, 0, false).loop(true).start().yoyo(true);
+
+	    	me.movingTraps2.add(block);
+	    }
 	    else if (imgId === 3){ // blood
-	    	block.body.width = block.body.sourceWidth * 0.64;
-			block.body.height = block.body.sourceHeight * 0.9;
 	    	me.bloods.add(block);
 	    }
 	    else if (imgId === 4){ // end point
 	    	block.width *= 1.3;
 	    	block.height *= 1.3;
-	    	block.body.width = block.width * 0.5;
-			block.body.height = block.height * 0.5;
 	    	me.endPoints.add(block);
 	    }
 
@@ -864,6 +976,9 @@ blocks - generations
 				imgStr = 'endpoint';
 			}
 			else if (imgId === 5){
+				imgStr = 'trap';
+			}
+			else if (imgId === 6){
 				imgStr = 'trap';
 			}
 

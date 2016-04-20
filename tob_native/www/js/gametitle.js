@@ -18,6 +18,8 @@ BasicGame.GameTitle.prototype = {
 
 		me.clickSound = me.game.add.audio('button');
 
+		me.showSplashScreen();
+		me.game.time.events.add(Phaser.Timer.SECOND * 4, me.hideSplashScreen, me);
 	},
 
 	update: function() {
@@ -26,6 +28,36 @@ BasicGame.GameTitle.prototype = {
 		me.updateBG();
 	},
 
+	showSplashScreen: function(){
+		var me = this;
+
+		// create a new bitmap data object
+	    var bmd = game.add.bitmapData(me.game.width, me.game.height);
+
+	    // draw to the canvas context like normal
+	    bmd.ctx.beginPath();
+	    bmd.ctx.rect(0,0,me.game.width,me.game.height);
+	    bmd.ctx.fillStyle = '#000000';
+	    bmd.ctx.fill();
+
+	    // use the bitmap data as the texture for the sprite
+	    me.splashBackground = game.add.sprite(0, 0, bmd);
+
+		me.splashScreen = this.game.add.sprite(this.game.width * 0.5, this.game.height * 0.5, 'kingsl_splash');  
+		me.splashScreen.anchor.setTo(0.5, 0.5);
+		var scale = (this.game.width * 0.25) / me.splashScreen.width;
+		me.splashScreen.scale.setTo(scale, scale);
+	},
+
+	hideSplashScreen: function(){
+		var me = this;
+
+		if (me.splashScreen)
+			me.splashScreen.visible = false;
+
+		if (me.splashBackground)
+			me.splashBackground.alpha = 0.0;
+	},
 
 	gotoMainMenu: function(){
 		if (this.mainmenuSound){

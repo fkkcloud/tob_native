@@ -292,11 +292,20 @@ BasicGame.ChallengeAI.prototype = {
 	createButtons: function(){
 		var me = this;
 
-		this.btn = this.game.add.button(this.game.world.width * 0.5, this.game.world.height * 0.86, 'btn_ai', this.startChallenge, this);
-		this.btn.scale.setTo(1.0, 1.0);
-		this.btn.anchor.setTo(0.5, 0.5);
-		this.btn.onInputDown.add(me.onDown, this);
-		this.btn.onInputUp.add(me.onUp, this);
+		var android = true;
+
+		if (android){
+			var warning = this.game.add.sprite(this.game.world.width * 0.5, this.game.world.height * 0.86, 'android_msg');
+			warning.anchor.setTo(0.5, 0.5);
+		}
+		else{
+			this.btn = this.game.add.button(this.game.world.width * 0.5, this.game.world.height * 0.86, 'btn_ai', this.startChallenge, this);
+			this.btn.scale.setTo(1.0, 1.0);
+			this.btn.anchor.setTo(0.5, 0.5);
+			this.btn.onInputDown.add(me.onDown, this);
+			this.btn.onInputUp.add(me.onUp, this);
+		}
+		
 
 		this.btn = this.game.add.button(this.game.world.width * 0.9, this.game.world.height * 0.86, 'btn_levelmenu', this.goToMainMenu, this);
 		this.btn.scale.setTo(0.9, 0.9);
